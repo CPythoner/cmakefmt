@@ -969,6 +969,40 @@ commands:
       dangle_parens: true
 ```
 
+Use `always_wrap_keywords` when a command should stay compact normally but
+switch to vertical layout whenever specific keyword sections appear. Matching
+is case-insensitive, and the matching keyword section's values are rendered
+vertically as well.
+
+For example, this keeps short `find_package()` calls on one line while
+expanding calls that declare components:
+
+```yaml
+commands:
+  find_package:
+    layout:
+      always_wrap_keywords:
+        - COMPONENTS
+        - OPTIONAL_COMPONENTS
+```
+
+With `line_width: 120`:
+
+```cmake
+find_package(fmt REQUIRED)
+
+find_package(
+    Qt5
+    COMPONENTS
+        Core
+        Widgets
+    REQUIRED)
+```
+
+Calls without those keywords still use the normal inline / line-width rules,
+so an overlong `find_package()` can wrap even when no configured trigger is
+present.
+
 ### Discriminated commands
 
 Some commands dispatch on their first token — `file()`, `install()`, and

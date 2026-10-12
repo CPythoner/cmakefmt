@@ -120,7 +120,20 @@ pub(crate) fn format_command(
         .always_wrap
         .iter()
         .any(|n| n.eq_ignore_ascii_case(&command.name));
-    let force_vertical = spec_always_wrap || config_always_wrap;
+    let always_wrap_keywords = form
+        .layout
+        .as_ref()
+        .and_then(|layout| layout.always_wrap_keywords.as_deref())
+        .unwrap_or(&[]);
+    let keyword_forces_vertical = sections.iter().any(|section| {
+        matches!(section.header_kind, Some(HeaderKind::Keyword))
+            && section.header.is_some_and(|header| {
+                always_wrap_keywords
+                    .iter()
+                    .any(|keyword| keyword.eq_ignore_ascii_case(header))
+            })
+    });
+    let force_vertical = spec_always_wrap || config_always_wrap || keyword_forces_vertical;
 
     let spec_wrap_first = form.layout.as_ref().and_then(|l| l.wrap_after_first_arg);
     let wrap_after_first_arg = cmd_config.wrap_after_first_arg(spec_wrap_first);
@@ -131,8 +144,13 @@ pub(crate) fn format_command(
     let ctx = WriteCtx::new(&cmd_config, patterns, continuation_align);
 
     let output = if force_vertical {
+        let reason = if keyword_forces_vertical && !spec_always_wrap && !config_always_wrap {
+            "always_wrap_keywords"
+        } else {
+            "always_wrap"
+        };
         debug.log(format!(
-            "formatter: command {} layout=vertical (always_wrap)",
+            "formatter: command {} layout=vertical ({reason})",
             command.name
         ));
         format_command_vertical(
@@ -760,7 +778,35 @@ fn write_sections(
                 output.push_str(&header);
                 let parent_spec = lookup_kwarg(form, header_raw);
                 let grouped_spec = parent_spec.filter(|s| !s.kwargs.is_empty());
-                if section.arguments.len() > cmd_config.max_pargs_hwrap() {
+                let always_wrap_keyword = form
+                    .layout
+                    .as_ref()
+                    .and_then(|layout| layout.always_wrap_keywords.as_deref())
+                    .is_some_and(|keywords| {
+                        keywords
+                            .iter()
+                            .any(|keyword| keyword.eq_ignore_ascii_case(header_raw))
+                    });
+                if always_wrap_keyword {
+                    output.push('\n');
+                    if let Some(spec) = grouped_spec {
+                        write_grouped_arguments(
+                            output,
+                            &section.arguments,
+                            nested_indent,
+                            spec,
+                            ctx,
+                        );
+                    } else {
+                        write_vertical_arguments(
+                            output,
+                            &section.arguments,
+                            nested_indent,
+                            ctx.config(),
+                            ctx.patterns,
+                        );
+                    }
+                } else if section.arguments.len() > cmd_config.max_pargs_hwrap() {
                     if let Some(spec) = grouped_spec {
                         write_header_line_and_group(
                             output,

@@ -8,6 +8,12 @@ This project follows a simple changelog discipline:
 
 ## Unreleased
 
+### Added
+
+- Add command-spec `layout.always_wrap_keywords` so selected keyword sections
+  can force an invocation into vertical layout while calls without those
+  keywords remain eligible for compact inline formatting.
+
 ## 2.1.0 — 2026-10-06
 
 ### Added

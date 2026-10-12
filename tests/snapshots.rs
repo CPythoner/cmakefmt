@@ -466,6 +466,53 @@ fn wraps_keyword_sections() {
 }
 
 #[test]
+fn spec_always_wrap_keywords_only_wraps_when_keyword_is_present() {
+    let src = "\
+find_package(fmt REQUIRED)
+find_package(Qt5 COMPONENTS Core Widgets REQUIRED)
+find_package(Qt5 OPTIONAL_COMPONENTS Svg REQUIRED)
+";
+    let config = Config {
+        line_width: 120,
+        tab_size: 4,
+        ..Config::default()
+    };
+
+    let mut registry = CommandRegistry::load().unwrap();
+    registry
+        .merge_override_str(
+            r#"
+[commands.find_package.layout]
+always_wrap_keywords = ["COMPONENTS", "OPTIONAL_COMPONENTS"]
+"#,
+            PathBuf::from("always-wrap-keywords.toml"),
+        )
+        .unwrap();
+
+    let formatted = format_source_with_registry(src, &config, &registry).unwrap();
+
+    insta::assert_snapshot!(formatted, @r"
+    find_package(fmt REQUIRED)
+    find_package(
+        Qt5
+        COMPONENTS
+            Core
+            Widgets
+        REQUIRED)
+    find_package(
+        Qt5
+        OPTIONAL_COMPONENTS
+            Svg
+        REQUIRED)
+    ");
+    assert_eq!(
+        format_source_with_registry(&formatted, &config, &registry).unwrap(),
+        formatted
+    );
+    assert!(cmakefmt::semantic::semantic_equivalent(src, &formatted));
+}
+
+#[test]
 fn discriminated_commands_use_selected_form() {
     let src = "install(TARGETS cmakefmt helper RUNTIME DESTINATION bin LIBRARY DESTINATION lib ARCHIVE DESTINATION lib/static)\n";
     let config = Config {

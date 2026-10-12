@@ -592,6 +592,7 @@ fn merge_layout(base: &mut LayoutOverrides, override_layout: LayoutOverridesOver
         tab_size,
         dangle_parens,
         always_wrap,
+        always_wrap_keywords,
         max_pargs_hwrap,
         wrap_after_first_arg,
         continuation_align,
@@ -608,6 +609,9 @@ fn merge_layout(base: &mut LayoutOverrides, override_layout: LayoutOverridesOver
     }
     if let Some(value) = always_wrap {
         base.always_wrap = Some(value);
+    }
+    if let Some(value) = always_wrap_keywords {
+        base.always_wrap_keywords = Some(value);
     }
     if let Some(value) = max_pargs_hwrap {
         base.max_pargs_hwrap = Some(value);

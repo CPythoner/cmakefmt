@@ -134,6 +134,9 @@ pub struct LayoutOverrides {
     pub dangle_parens: Option<bool>,
     /// Force this command form into a wrapped layout.
     pub always_wrap: Option<bool>,
+    /// Keyword section names that force this command form into a wrapped
+    /// layout when present. Matching keyword sections are rendered vertically.
+    pub always_wrap_keywords: Option<Vec<String>>,
     /// Override the positional-argument hanging-wrap threshold for this form.
     pub max_pargs_hwrap: Option<usize>,
     /// Keep the first positional argument on the command line when wrapping.
@@ -314,6 +317,10 @@ pub(crate) struct LayoutOverridesOverride {
     /// Force this command form into a wrapped layout.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub always_wrap: Option<bool>,
+    /// Keyword section names that force this command form into a wrapped
+    /// layout when present. Matching keyword sections are rendered vertically.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub always_wrap_keywords: Option<Vec<String>>,
     /// Override the positional-argument hanging-wrap threshold for this form.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub max_pargs_hwrap: Option<usize>,
@@ -461,6 +468,7 @@ impl LayoutOverridesOverride {
             tab_size: self.tab_size,
             dangle_parens: self.dangle_parens,
             always_wrap: self.always_wrap,
+            always_wrap_keywords: self.always_wrap_keywords,
             max_pargs_hwrap: self.max_pargs_hwrap,
             wrap_after_first_arg: self.wrap_after_first_arg,
             continuation_align: self.continuation_align,

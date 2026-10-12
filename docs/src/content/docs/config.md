@@ -989,7 +989,7 @@ commands:
 With `line_width: 120`:
 
 ```cmake
-find_package(cmx REQUIRED)
+find_package(fmt REQUIRED)
 
 find_package(
     Qt5

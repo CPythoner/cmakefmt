@@ -468,7 +468,7 @@ fn wraps_keyword_sections() {
 #[test]
 fn spec_always_wrap_keywords_only_wraps_when_keyword_is_present() {
     let src = "\
-find_package(cmx REQUIRED)
+find_package(fmt REQUIRED)
 find_package(Qt5 COMPONENTS Core Widgets REQUIRED)
 find_package(Qt5 OPTIONAL_COMPONENTS Svg REQUIRED)
 ";
@@ -492,7 +492,7 @@ always_wrap_keywords = ["COMPONENTS", "OPTIONAL_COMPONENTS"]
     let formatted = format_source_with_registry(src, &config, &registry).unwrap();
 
     insta::assert_snapshot!(formatted, @r"
-    find_package(cmx REQUIRED)
+    find_package(fmt REQUIRED)
     find_package(
         Qt5
         COMPONENTS
